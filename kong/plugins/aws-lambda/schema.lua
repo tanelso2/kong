@@ -12,6 +12,7 @@ return {
     invocation_type = {type = "string", required = true, default = "RequestResponse", 
                        enum = {"RequestResponse", "Event", "DryRun"}},
     log_type = {type = "string", required = true, default = "Tail", 
-                       enum = {"Tail", "None"}}
+                       enum = {"Tail", "None"}},
+    preserve_headers = {type = "boolean", required = true, default = false}
   }
 }

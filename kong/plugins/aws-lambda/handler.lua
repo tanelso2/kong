@@ -23,10 +23,11 @@ function AWSLambdaHandler:new()
   AWSLambdaHandler.super.new(self, "aws-lambda")
 end
 
-local function retrieve_parameters()
+local function retrieve_parameters(preserve_headers)
   ngx_req_read_body()
   local body_parameters, err
-  local content_type = ngx_req_get_headers()[CONTENT_TYPE]
+  local headers = ngx_req_get_headers()
+  local content_type = headers[CONTENT_TYPE]
   if content_type and string_find(content_type:lower(), "multipart/form-data", nil, true) then
     body_parameters = Multipart(ngx_req_get_body_data(), content_type):get_all()
   elseif content_type and string_find(content_type:lower(), "application/json", nil, true) then
@@ -38,13 +39,17 @@ local function retrieve_parameters()
     body_parameters = public_utils.get_post_args()
   end
 
-  return utils.table_merge(ngx_req_get_uri_args(), body_parameters)
+  local parameters = utils.table_merge(ngx_req_get_uri_args(), body_parameters)
+  if preserve_headers then
+    return { body = parameters, headers = headers }
+  end
+  return parameters
 end
 
 function AWSLambdaHandler:access(conf)
   AWSLambdaHandler.super.access(self)
 
-  local bodyJson = cjson.encode(retrieve_parameters())
+  local bodyJson = cjson.encode(retrieve_parameters(conf.preserve_headers))
 
   local host = string.format("lambda.%s.amazonaws.com", conf.aws_region)
   local path = string.format("/2015-03-31/functions/%s/invocations",
