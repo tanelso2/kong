@@ -1,5 +1,9 @@
 ## [Unreleased][unreleased]
 
+- Plugins:
+  - cors: `origins` can now be configured as a regular expression to match
+    against Origin headers.
+
 ## [0.10.2] - 2017/05/01
 
 ### Changed
